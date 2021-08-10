@@ -32,6 +32,8 @@ result = bodypix_model.predict_single(image_array)
 mask = result.get_mask(threshold=0.75)
 
 face_mask = result.get_part_mask(mask, ['left_face', 'right_face'])
+face_mask = cv2.erode(face_mask, np.ones((6, 6), dtype=np.bool), iterations=3)
+face_mask = cv2.dilate(face_mask, np.ones((6, 6), dtype=np.bool), iterations=3)
 tf.keras.preprocessing.image.save_img(
     'log/face-mask.jpg',
     face_mask

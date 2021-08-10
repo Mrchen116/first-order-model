@@ -37,7 +37,7 @@ tf.keras.preprocessing.image.save_img(
     face_mask
 )
 
-crop = image_array[:256, :256]
+crop = resized[:256, :256]
 crop_mask = face_mask[:256, :256]
 
 fg, bg = separate(crop, crop_mask)

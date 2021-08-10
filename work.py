@@ -23,7 +23,7 @@ resized = imutils.resize(origin, width=256)
 cv2.imwrite(IMG_RESIZE_PATH, resized)
 
 bodypix_model = load_model(download_model(
-    BodyPixModelPaths.MOBILENET_FLOAT_100_STRIDE_8
+    BodyPixModelPaths.MOBILENET_FLOAT_75_STRIDE_8
 ))
 
 image = tf.keras.preprocessing.image.load_img(IMG_RESIZE_PATH)

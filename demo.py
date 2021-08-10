@@ -29,6 +29,7 @@ def load_checkpoints(config_path, checkpoint_path, cpu=False):
     generator = OcclusionAwareGenerator(**config['model_params']['generator_params'],
                                         **config['model_params']['common_params'])
     if not cpu:
+        os.environ["CUDA_VISIBLE_DEVICES"] = '0'
         generator.cuda()
 
     kp_detector = KPDetector(**config['model_params']['kp_detector_params'],

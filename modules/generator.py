@@ -54,6 +54,19 @@ class OcclusionAwareGenerator(nn.Module):
             deformation = deformation.permute(0, 3, 1, 2)
             deformation = F.interpolate(deformation, size=(h, w), mode='bilinear')
             deformation = deformation.permute(0, 2, 3, 1)
+        '''
+        print('deformation', deformation.shape)
+        print('input ', inp.shape)
+        exit(0)
+        '''
+        tot_h = h // 8
+        first_h = h - tot_h
+        for j in range(first_h, h):
+            for i in range(w):
+                static = i * 2 / w - 1, 1 - 2 / h * (h - j)
+                deformation[0, j, i, 0] = (static[0] * (j - first_h) + deformation[0, j, i, 0] * (h - j)) / tot_h
+                deformation[0, j, i, 1] = (static[1] * (j - first_h) + deformation[0, j, i, 1] * (h - j)) / tot_h
+
         return F.grid_sample(inp, deformation)
 
     def forward(self, source_image, kp_driving, kp_source):

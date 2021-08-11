@@ -43,7 +43,7 @@ crop = resized[:256, :256]
 crop_mask = face_mask[:256, :256]
 
 fg, bg = separate(crop, crop_mask)
-cv2.imwrite(FG_PATH, fg)
+cv2.imwrite(FG_PATH, fg)###
 cv2.imwrite(BG_PATH, bg)
 
 cmd = "python demo.py  --config config/vox-256.yaml" \

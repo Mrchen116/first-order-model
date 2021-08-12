@@ -52,7 +52,8 @@ driving_video = args.driving_video
 source_image = crop_path
 result = os.path.join('log', f"{getfilename(driving_video)}_{getfilename(source_image)}.mp4") if args.result_video == '0' else args.result_video
 cmd = f"python demo.py  --config config/vox-256.yaml --driving_video {driving_video} " \
-      f"--source_image {source_image} --checkpoint checkpoints/vox256.pth --relative --adapt_scale"
+      f"--source_image {source_image} --checkpoint checkpoints/vox256.pth " \
+      f"--result_video {result} --relative --adapt_scale"
 print(cmd)
 os.system(cmd)
 

@@ -47,6 +47,26 @@ class OcclusionAwareGenerator(nn.Module):
         self.estimate_occlusion_map = estimate_occlusion_map
         self.num_channels = num_channels
 
+        ######## zijian #########
+        self.origin_image_grid = dict()
+        self.fom_dict_weight = dict()
+
+    def get_mix_origin_and_fom(self, deformation):
+        batch, h, w, _ = deformation.shape
+        tot_h = h // 3
+        first_h = h - tot_h
+        ori_deformation = torch.zeros(1, h, w, 2)
+        fom_weight = torch.zeros(1, h, w, 2)
+        for j in range(first_h, h):
+            for i in range(w):
+                static = i * 2 / w - 1, 1 - 2 / h * (h - j)
+                ori_deformation[:, j, i, 0] = static[0] * (j - first_h) / tot_h
+                ori_deformation[:, j, i, 1] = static[1] * (j - first_h) / tot_h
+                fom_weight[:, j, i, 0] = (h - j) / tot_h
+                fom_weight[:, j, i, 1] = (h - j) / tot_h
+        self.origin_image_grid[(h, w)] = ori_deformation
+        self.fom_dict_weight[(h, w)] = fom_weight
+
     def deform_input(self, inp, deformation):
         _, h_old, w_old, _ = deformation.shape
         _, _, h, w = inp.shape
@@ -59,13 +79,16 @@ class OcclusionAwareGenerator(nn.Module):
         print('input ', inp.shape)
         exit(0)
         '''
-        tot_h = h // 3
-        first_h = h - tot_h
-        for j in range(first_h, h):
-            for i in range(w):
-                static = i * 2 / w - 1, 1 - 2 / h * (h - j)
-                deformation[0, j, i, 0] = (static[0] * (j - first_h) + deformation[0, j, i, 0] * (h - j)) / tot_h
-                deformation[0, j, i, 1] = (static[1] * (j - first_h) + deformation[0, j, i, 1] * (h - j)) / tot_h
+        if (h, w) not in self.origin_image_grid:
+            self.get_mix_origin_and_fom(deformation)
+        deformation = self.fom_dict_weight[(h, w)] * deformation + self.origin_image_grid[(h, w)]
+        # tot_h = h // 3
+        # first_h = h - tot_h
+        # for j in range(first_h, h):
+        #     for i in range(w):
+        #         static = i * 2 / w - 1, 1 - 2 / h * (h - j)
+        #         deformation[0, j, i, 0] = (static[0] * (j - first_h) + deformation[0, j, i, 0] * (h - j)) / tot_h
+        #         deformation[0, j, i, 1] = (static[1] * (j - first_h) + deformation[0, j, i, 1] * (h - j)) / tot_h
 
         return F.grid_sample(inp, deformation)
 

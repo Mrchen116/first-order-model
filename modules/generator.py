@@ -53,7 +53,7 @@ class OcclusionAwareGenerator(nn.Module):
 
     def get_mix_origin_and_fom(self, deformation):
         batch, h, w, _ = deformation.shape
-        tot_h = h // 3
+        tot_h = h // 4
         first_h = h - tot_h
         ori_deformation = torch.zeros(1, h, w, 2)
         fom_weight = torch.ones(1, h, w, 2)

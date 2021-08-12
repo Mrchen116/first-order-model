@@ -59,7 +59,7 @@ class OcclusionAwareGenerator(nn.Module):
         print('input ', inp.shape)
         exit(0)
         '''
-        tot_h = h // 8
+        tot_h = h // 3
         first_h = h - tot_h
         for j in range(first_h, h):
             for i in range(w):

@@ -29,7 +29,7 @@ parser.add_argument("--result_video", default='0', help="path to output")
 # parser.add_argument("--cutted", action="store_true", help="if the iamge has been cutted")
 
 args = parser.parse_args()
-crop_path = os.path.join('log', getfilename(args.source_image) + '.png')
+crop_path = os.path.join('log', 'cut_' + getfilename(args.source_image) + '.png')
 image = cv2.imread(args.source_image)
 h, w, _ = image.shape
 with mp_face_detection.FaceDetection() as face_detection:
@@ -38,8 +38,8 @@ with mp_face_detection.FaceDetection() as face_detection:
     for detection in result.detections:
         box = detection.location_data.relative_bounding_box
         xmin, ymin, width, height = int(box.xmin * w), int(box.ymin * h), int(box.width * w), int(box.height * h)
+        ymax = min(ymin + int(height * 1.5), h)
         ymin = max(ymin - int(height * 0.8), 0)
-        ymax = min(ymin + int(height * 2.2), h)
         height = ymax - ymin
         xmin = max(xmin - (height - width) // 2, 0)
         xmax = min(xmin + height, w)

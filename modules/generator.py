@@ -64,8 +64,8 @@ class OcclusionAwareGenerator(nn.Module):
                 ori_deformation[:, j, i, 1] = static[1] * (j - first_h) / tot_h
                 fom_weight[:, j, i, 0] = (h - j) / tot_h
                 fom_weight[:, j, i, 1] = (h - j) / tot_h
-        self.origin_image_grid[(h, w)] = ori_deformation
-        self.fom_dict_weight[(h, w)] = fom_weight
+        self.origin_image_grid[(h, w)] = ori_deformation.cuda()
+        self.fom_dict_weight[(h, w)] = fom_weight.cuda()
 
     def deform_input(self, inp, deformation):
         _, h_old, w_old, _ = deformation.shape

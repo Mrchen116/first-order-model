@@ -18,8 +18,7 @@ parser.add_argument("--cutted", action="store_true", help="if the iamge has been
 args = parser.parse_args()
 
 if not args.cutted:
-    with mp_face_detection.FaceDetection(
-        model_selection=1) as face_detection:
+    with mp_face_detection.FaceDetection() as face_detection:
         image = cv2.imread(args.source_image)
         result = face_detection.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
         assert result.detections

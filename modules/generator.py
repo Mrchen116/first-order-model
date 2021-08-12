@@ -56,7 +56,7 @@ class OcclusionAwareGenerator(nn.Module):
         tot_h = h // 3
         first_h = h - tot_h
         ori_deformation = torch.zeros(1, h, w, 2)
-        fom_weight = torch.zeros(1, h, w, 2)
+        fom_weight = torch.ones(1, h, w, 2)
         for j in range(first_h, h):
             for i in range(w):
                 static = i * 2 / w - 1, 1 - 2 / h * (h - j)

@@ -38,7 +38,7 @@ with mp_face_detection.FaceDetection() as face_detection:
     for detection in result.detections:
         box = detection.location_data.relative_bounding_box
         xmin, ymin, width, height = int(box.xmin * w), int(box.ymin * h), int(box.width * w), int(box.height * h)
-        ymin = max(ymin - height // 3, 0)
+        ymin = max(ymin - height // 2, 0)
         ymax = min(ymin + height * 5 // 3, h)
         height = ymax - ymin
         xmin = max(xmin - (height - width) // 2, 0)

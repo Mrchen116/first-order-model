@@ -22,6 +22,9 @@ def back_to_pic(croped_image, box, org_image):
     # mask //= 255
     return (back_croped_image * mask + org_image * (1 - mask)).astype(np.uint8)
 
+if not os.path.exists('log'):
+    os.mkdir('log')
+
 parser = ArgumentParser()
 parser.add_argument("--source_image", default='data/boy.png', help="path to source image")
 parser.add_argument("--driving_video", default='data/trump.mp4', help="path to driving video")
@@ -51,9 +54,9 @@ with mp_face_detection.FaceDetection() as face_detection:
 driving_video = args.driving_video
 source_image = crop_path
 result = os.path.join('log', f"{getfilename(driving_video)}_{getfilename(source_image)}.mp4") if args.result_video == '0' else args.result_video
-cmd = f"python demo.py  --config config/vox-256.yaml --driving_video {driving_video} " \
+cmd = f"python3 demo.py  --config config/vox-256.yaml --driving_video {driving_video} " \
       f"--source_image {source_image} --checkpoint checkpoints/vox256.pth " \
-      f"--result_video {result} --relative --adapt_scale"
+      f"--result_video {result} --relative --adapt_scale --best_frame"
 print(cmd)
 os.system(cmd)
 

@@ -52,6 +52,7 @@ class OcclusionAwareGenerator(nn.Module):
         self.fom_dict_weight = dict()
 
     def get_mix_origin_and_fom(self, deformation):
+        device = deformation.device
         batch, h, w, _ = deformation.shape
         tot_h = h // 4
         first_h = h - tot_h
@@ -64,8 +65,8 @@ class OcclusionAwareGenerator(nn.Module):
                 ori_deformation[:, j, i, 1] = static[1] * (j - first_h) / tot_h
                 fom_weight[:, j, i, 0] = (h - j) / tot_h
                 fom_weight[:, j, i, 1] = (h - j) / tot_h
-        self.origin_image_grid[(h, w)] = ori_deformation.cuda()
-        self.fom_dict_weight[(h, w)] = fom_weight.cuda()
+        self.origin_image_grid[(h, w)] = ori_deformation.to(device)
+        self.fom_dict_weight[(h, w)] = fom_weight.to(device)
 
     def deform_input(self, inp, deformation):
         _, h_old, w_old, _ = deformation.shape

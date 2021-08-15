@@ -29,6 +29,7 @@ parser = ArgumentParser()
 parser.add_argument("--source_image", default='data/boy.png', help="path to source image")
 parser.add_argument("--driving_video", default='data/trump.mp4', help="path to driving video")
 parser.add_argument("--result_video", default='0', help="path to output")
+parser.add_argument("--cpu", dest="cpu", action="store_true", help="cpu mode.")
 # parser.add_argument("--cutted", action="store_true", help="if the iamge has been cutted")
 
 args = parser.parse_args()
@@ -56,7 +57,7 @@ source_image = crop_path
 result = os.path.join('log', f"{getfilename(driving_video)}_{getfilename(source_image)}.mp4") if args.result_video == '0' else args.result_video
 cmd = f"python3 demo.py  --config config/vox-256.yaml --driving_video {driving_video} " \
       f"--source_image {source_image} --checkpoint checkpoints/vox256.pth " \
-      f"--result_video {result} --relative --adapt_scale --best_frame"
+      f"--result_video {result} --relative --adapt_scale --find_best_frame {'--cpu' if args.cpu else ' '}"
 print(cmd)
 os.system(cmd)
 

@@ -30,6 +30,10 @@ There are several configuration (```config/dataset_name.yaml```) files one for e
 
 ### Pre-trained checkpoint
 Checkpoints can be found under following link: [google-drive](https://drive.google.com/open?id=1PyQJmkdCsAkOYwUyaj_l-l0as-iLDgeH) or [yandex-disk](https://yadi.sk/d/lEw8uRm140L_eQ).
+download vox-cpk.pth.tar by wget:
+```
+wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1_v_xW1V52gZCZnXgh1Ap_gwA9YVIzUnS' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1_v_xW1V52gZCZnXgh1Ap_gwA9YVIzUnS" -O vox256.pth && rm -rf /tmp/cookies.txt
+```
 
 ### Animation Demo
 To run a demo, download checkpoint and run the following command:

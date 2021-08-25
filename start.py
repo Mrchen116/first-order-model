@@ -29,6 +29,7 @@ parser = ArgumentParser()
 parser.add_argument("--source_image", default='data/boy.png', help="path to source image")
 parser.add_argument("--driving_video", default='data/trump.mp4', help="path to driving video")
 parser.add_argument("--result_video", default='0', help="path to output")
+parser.add_argument('--face_enhance', action='store_true', help='Use GFPGAN to enhance face')
 parser.add_argument("--cpu", dest="cpu", action="store_true", help="cpu mode.")
 # parser.add_argument("--cutted", action="store_true", help="if the iamge has been cutted")
 
@@ -61,15 +62,26 @@ cmd = f"python3 demo.py  --config config/vox-256.yaml --driving_video {driving_v
 print(cmd)
 os.system(cmd)
 
-video = cv2.VideoCapture(result)
+
+enhance_result = os.path.join('log', f"enhance_{getfilename(result)}.mp4")
+cmd = f"cd Real-ESRGAN && python3 inference_video.py --model_path experiments/pretrained_models/RealESRGAN_x4plus.pth --input {os.path.abspath(result)} --output {os.path.abspath(enhance_result)}"
+if args.face_enhance:
+    cmd += " --face_enhance"
+print(cmd)
+os.system(cmd)
+
+print("start post back")
+video = cv2.VideoCapture(enhance_result)
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 fps = 25
 height, width, _ = image.shape
-writer = cv2.VideoWriter(os.path.join('log', f"deal_{getfilename(result)}.mp4"), fourcc, fps, (width, height))
+writer = cv2.VideoWriter(os.path.join('log', f"final_{getfilename(result)}.mp4"), fourcc, fps, (width, height))
+in_while = False
 while True:
     ret, img = video.read()
     if not ret:
         break
     writer.write(back_to_pic(img, box, image))
+    in_while = True
 writer.release()
-print('\n\nsuccess')
+print('\n\nsuccess' if in_while else "\n\nfail")

@@ -56,7 +56,7 @@ class OcclusionAwareGenerator(nn.Module):
         batch, h, w, _ = deformation.shape
         ori_deformation = torch.zeros(1, h, w, 2)
         fom_weight = torch.ones(1, h, w, 2)
-        transition = h // 4
+        transition = h // 6
         for i in range(h):
             for j in range(w):
                 dis = min([i, j, h - 1 - i, w - 1 - j]) + 1
@@ -130,6 +130,10 @@ class OcclusionAwareGenerator(nn.Module):
             if occlusion_map is not None:
                 if out.shape[2] != occlusion_map.shape[2] or out.shape[3] != occlusion_map.shape[3]:
                     occlusion_map = F.interpolate(occlusion_map, size=out.shape[2:], mode='bilinear')
+                _, _, h, w = occlusion_map.shape
+                # print("----------------- ", occlusion_map.shape, out.shape)
+                fom_weight = self.fom_dict_weight[(h, w)][:,:,:,0].view(-1, h, w)
+                occlusion_map = (1 - fom_weight) + fom_weight * occlusion_map
                 out = out * occlusion_map
 
             output_dict["deformed"] = self.deform_input(source_image, deformation)

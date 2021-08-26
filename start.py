@@ -17,9 +17,9 @@ def back_to_pic(croped_image, box, org_image):
     back_croped_image = mask.copy()
     back_croped_image[y1:y2, x1:x2, :] = croped_image
     mask[y1:y2, x1:x2, :] = 255
-    mask = cv2.erode(mask, np.ones((7, 7), np.uint8), iterations=5)
-    mask = cv2.blur(mask, (25, 25)) / 255
-    # mask //= 255
+    # mask = cv2.erode(mask, np.ones((7, 7), np.uint8), iterations=5)
+    # mask = cv2.blur(mask, (25, 25)) / 255
+    mask //= 255
     return (back_croped_image * mask + org_image * (1 - mask)).astype(np.uint8)
 
 if not os.path.exists('log'):
@@ -43,8 +43,8 @@ with mp_face_detection.FaceDetection() as face_detection:
     for detection in result.detections:
         box = detection.location_data.relative_bounding_box
         xmin, ymin, width, height = int(box.xmin * w), int(box.ymin * h), int(box.width * w), int(box.height * h)
-        ymax = min(ymin + int(height * 1.5), h)
-        ymin = max(ymin - int(height * 0.8), 0)
+        ymax = min(ymin + int(height * 1.2), h)
+        ymin = max(ymin - int(height * 0.7), 0)
         height = ymax - ymin
         xmin = max(xmin - (height - width) // 2, 0)
         xmax = min(xmin + height, w)
@@ -55,7 +55,7 @@ with mp_face_detection.FaceDetection() as face_detection:
 
 driving_video = args.driving_video
 source_image = crop_path
-result = os.path.join('log', f"{getfilename(driving_video)}_{getfilename(source_image)}.mp4") if args.result_video == '0' else args.result_video
+result = os.path.join('log', f"{getfilename(driving_video)}_{getfilename(args.source_image)}.mp4")
 cmd = f"python3 demo.py  --config config/vox-256.yaml --driving_video {driving_video} " \
       f"--source_image {source_image} --checkpoint checkpoints/vox256.pth " \
       f"--result_video {result} --relative --adapt_scale --find_best_frame {'--cpu' if args.cpu else ' '}"
@@ -75,7 +75,8 @@ video = cv2.VideoCapture(enhance_result)
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 fps = 25
 height, width, _ = image.shape
-writer = cv2.VideoWriter(os.path.join('log', f"final_{getfilename(result)}.mp4"), fourcc, fps, (width, height))
+final_result = os.path.join('log', f"final_{getfilename(result)}.mp4") if args.result_video == '0' else args.result_video
+writer = cv2.VideoWriter(final_result, fourcc, fps, (width, height))
 in_while = False
 while True:
     ret, img = video.read()

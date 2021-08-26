@@ -54,17 +54,29 @@ class OcclusionAwareGenerator(nn.Module):
     def get_mix_origin_and_fom(self, deformation):
         device = deformation.device
         batch, h, w, _ = deformation.shape
-        tot_h = h // 4
-        first_h = h - tot_h
         ori_deformation = torch.zeros(1, h, w, 2)
         fom_weight = torch.ones(1, h, w, 2)
-        for j in range(first_h, h):
-            for i in range(w):
-                static = i * 2 / w - 1, 1 - 2 / h * (h - j)
-                ori_deformation[:, j, i, 0] = static[0] * (j - first_h) / tot_h
-                ori_deformation[:, j, i, 1] = static[1] * (j - first_h) / tot_h
-                fom_weight[:, j, i, 0] = (h - j) / tot_h
-                fom_weight[:, j, i, 1] = (h - j) / tot_h
+        transition = h // 4
+        for i in range(h):
+            for j in range(w):
+                dis = min([i, j, h - 1 - i, w - 1 - j]) + 1
+                if dis > transition:
+                    continue
+                static = j * 2 / w - 1, i * 2 / h - 1
+                ori_deformation[:, i, j, 0] = static[0] * (transition - dis) / transition
+                ori_deformation[:, i, j, 1] = static[1] * (transition - dis) / transition
+                fom_weight[:, i, j, 0] = dis / transition
+                fom_weight[:, i, j, 1] = dis / transition
+
+        # tot_h = h // 4
+        # first_h = h - tot_h
+        # for j in range(first_h, h):
+        #     for i in range(w):
+        #         static = i * 2 / w - 1, 1 - 2 / h * (h - j)
+        #         ori_deformation[:, j, i, 0] = static[0] * (j - first_h) / tot_h
+        #         ori_deformation[:, j, i, 1] = static[1] * (j - first_h) / tot_h
+        #         fom_weight[:, j, i, 0] = (h - j) / tot_h
+        #         fom_weight[:, j, i, 1] = (h - j) / tot_h
         self.origin_image_grid[(h, w)] = ori_deformation.to(device)
         self.fom_dict_weight[(h, w)] = fom_weight.to(device)
 

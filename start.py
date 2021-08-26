@@ -1,5 +1,6 @@
 import os
 from argparse import ArgumentParser
+from tqdm import tqdm
 import cv2
 import numpy as np
 import mediapipe as mp
@@ -10,17 +11,22 @@ def getfilename(path):
     name = os.path.splitext(file)[0]
     return name
 
-def back_to_pic(croped_image, box, org_image):
-    x1, y1, x2, y2 = box
-    croped_image = cv2.resize(croped_image, (x2 - x1, y2 - y1))
-    mask = np.zeros(org_image.shape, np.uint8)
-    back_croped_image = mask.copy()
-    back_croped_image[y1:y2, x1:x2, :] = croped_image
-    mask[y1:y2, x1:x2, :] = 255
-    # mask = cv2.erode(mask, np.ones((7, 7), np.uint8), iterations=5)
-    # mask = cv2.blur(mask, (25, 25)) / 255
-    mask //= 255
-    return (back_croped_image * mask + org_image * (1 - mask)).astype(np.uint8)
+class Post_back:
+    def __init__(self, box, org_image) -> None:
+        x1, y1, x2, y2 = box
+        mask = np.zeros(org_image.shape, np.uint8)
+        mask[y1:y2, x1:x2, :] = 255
+        mask = cv2.erode(mask, np.ones((7, 7), np.uint8), iterations=5)
+        self.mask = cv2.blur(mask, (25, 25)) / 255
+        self.org_image = org_image       
+        # mask //= 255
+
+    def back_to_pic(self, croped_image):
+        x1, y1, x2, y2 = box
+        croped_image = cv2.resize(croped_image, (x2 - x1, y2 - y1))
+        back_croped_image = np.zeros(self.org_image.shape, np.uint8)
+        back_croped_image[y1:y2, x1:x2, :] = croped_image
+        return (back_croped_image * self.mask + self.org_image * (1 - self.mask)).astype(np.uint8)
 
 if not os.path.exists('log'):
     os.mkdir('log')
@@ -60,7 +66,7 @@ cmd = f"python3 demo.py  --config config/vox-256.yaml --driving_video {driving_v
       f"--source_image {source_image} --checkpoint checkpoints/vox256.pth " \
       f"--result_video {result} --relative --adapt_scale --find_best_frame {'--cpu' if args.cpu else ' '}"
 print(cmd)
-os.system(cmd)
+# os.system(cmd)
 
 
 enhance_result = os.path.join('log', f"enhance_{getfilename(result)}.mp4")
@@ -68,21 +74,23 @@ cmd = f"cd Real-ESRGAN && python3 inference_video.py --model_path experiments/pr
 if args.face_enhance:
     cmd += " --face_enhance"
 print(cmd)
-os.system(cmd)
+# os.system(cmd)
 
 print("start post back")
 video = cv2.VideoCapture(enhance_result)
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-fps = 25
+fps = video.get(5)
+frame_cnt = int(video.get(7))
 height, width, _ = image.shape
 final_result = os.path.join('log', f"final_{getfilename(result)}.mp4") if args.result_video == '0' else args.result_video
 writer = cv2.VideoWriter(final_result, fourcc, fps, (width, height))
 in_while = False
-while True:
+post_back = Post_back(box, image)
+for i in tqdm(range(frame_cnt)):
     ret, img = video.read()
     if not ret:
         break
-    writer.write(back_to_pic(img, box, image))
+    writer.write(post_back.back_to_pic(img))
     in_while = True
 writer.release()
 print('\n\nsuccess' if in_while else "\n\nfail")

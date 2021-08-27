@@ -16,10 +16,17 @@ class Post_back:
         x1, y1, x2, y2 = box
         mask = np.zeros(org_image.shape, np.uint8)
         mask[y1:y2, x1:x2, :] = 255
-        mask = cv2.erode(mask, np.ones((7, 7), np.uint8), iterations=5)
-        self.mask = cv2.blur(mask, (25, 25)) / 255
-        self.org_image = org_image       
-        # mask //= 255
+        val = (x2 - x1) // 20
+        erode_val = int(val * 1.5 / 2)
+        erode_mask = cv2.erode(mask, np.ones((erode_val, erode_val), np.uint8), iterations=1)
+        
+        blur_mask = cv2.blur(erode_mask, (val, val))
+        self.mask = cv2.bitwise_and(blur_mask, mask)
+        # draw the mask
+        # debugmask = cv2.polylines(self.mask, np.array([[(x1, y1), (x1, y2), (x2, y2), (x2, y1)]]), 1, [0, 0, 255])
+        # cv2.imwrite('log/mask.jpg', debugmask)
+        self.mask = self.mask / 255
+        self.org_image = org_image
 
     def back_to_pic(self, croped_image):
         x1, y1, x2, y2 = box
@@ -66,7 +73,7 @@ cmd = f"python3 demo.py  --config config/vox-256.yaml --driving_video {driving_v
       f"--source_image {source_image} --checkpoint checkpoints/vox256.pth " \
       f"--result_video {result} --relative --adapt_scale --find_best_frame {'--cpu' if args.cpu else ' '}"
 print(cmd)
-# os.system(cmd)
+os.system(cmd)
 
 
 enhance_result = os.path.join('log', f"enhance_{getfilename(result)}.mp4")
@@ -74,7 +81,7 @@ cmd = f"cd Real-ESRGAN && python3 inference_video.py --model_path experiments/pr
 if args.face_enhance:
     cmd += " --face_enhance"
 print(cmd)
-# os.system(cmd)
+os.system(cmd)
 
 print("start post back")
 video = cv2.VideoCapture(enhance_result)

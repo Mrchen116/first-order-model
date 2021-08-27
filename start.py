@@ -17,6 +17,7 @@ def getfilename(path):
 class Post_back:
     def __init__(self, box, org_image) -> None:
         x1, y1, x2, y2 = box
+        print('crop box: ', box)
         mask = np.zeros(org_image.shape, np.uint8)
         mask[y1:y2, x1:x2, :] = 255
         val = (x2 - x1) // 20
@@ -67,6 +68,7 @@ with mp_face_detection.FaceDetection() as face_detection:
         crop = image[ymin:ymax, xmin:xmax]
         cv2.imwrite(crop_path, crop)
         box = xmin, ymin, xmax, ymax
+        scale = height / 256
         break
 
 driving_video = args.driving_video
@@ -88,7 +90,9 @@ height, width, _ = image.shape
 final_result = os.path.join('log', f"final_{getfilename(result)}.mp4") if args.result_video == '0' else args.result_video
 writer = cv2.VideoWriter(final_result, fourcc, fps, (width, height))
 in_while = False
-super_resolution = Inference(face_enhance=args.face_enhance, model_path='Real-ESRGAN/experiments/pretrained_models/RealESRGAN_x4plus.pth')
+netscale = 4 if scale > 2 else 2
+print(f"super resolution scale is {netscale}")
+super_resolution = Inference(face_enhance=args.face_enhance, netscale=netscale, outscale=netscale, model_path=f'Real-ESRGAN/experiments/pretrained_models/RealESRGAN_x{netscale}plus.pth')
 post_back = Post_back(box, image)
 for i in tqdm(range(frame_cnt)):
     ret, img = video.read()

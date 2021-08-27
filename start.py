@@ -4,6 +4,9 @@ from tqdm import tqdm
 import cv2
 import numpy as np
 import mediapipe as mp
+import sys
+sys.path.append('Real-ESRGAN')
+from inference_video import Inference
 mp_face_detection = mp.solutions.face_detection
 
 def getfilename(path):
@@ -76,15 +79,8 @@ print(cmd)
 os.system(cmd)
 
 
-enhance_result = os.path.join('log', f"enhance_{getfilename(result)}.mp4")
-cmd = f"cd Real-ESRGAN && python3 inference_video.py --model_path experiments/pretrained_models/RealESRGAN_x4plus.pth --input {os.path.abspath(result)} --output {os.path.abspath(enhance_result)}"
-if args.face_enhance:
-    cmd += " --face_enhance"
-print(cmd)
-os.system(cmd)
-
-print("start post back")
-video = cv2.VideoCapture(enhance_result)
+print("start super resolution and post back")
+video = cv2.VideoCapture(result)
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 fps = video.get(5)
 frame_cnt = int(video.get(7))
@@ -92,12 +88,14 @@ height, width, _ = image.shape
 final_result = os.path.join('log', f"final_{getfilename(result)}.mp4") if args.result_video == '0' else args.result_video
 writer = cv2.VideoWriter(final_result, fourcc, fps, (width, height))
 in_while = False
+super_resolution = Inference(face_enhance=args.face_enhance, model_path='Real-ESRGAN/experiments/pretrained_models/RealESRGAN_x4plus.pth')
 post_back = Post_back(box, image)
 for i in tqdm(range(frame_cnt)):
     ret, img = video.read()
     if not ret:
         break
-    writer.write(post_back.back_to_pic(img))
+    sr = super_resolution.inference(img)
+    writer.write(post_back.back_to_pic(sr))
     in_while = True
 writer.release()
 print('\n\nsuccess' if in_while else "\n\nfail")
